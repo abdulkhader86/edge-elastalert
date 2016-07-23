@@ -178,7 +178,6 @@ class MockElastAlerter(object):
 
         # Load and instantiate rule
         load_modules(rule)
-        conf['rules'] = [rule]
 
         # If using mock data, make sure it's sorted and find appropriate time range
         timestamp_field = rule.get('timestamp_field', '@timestamp')
@@ -216,9 +215,10 @@ class MockElastAlerter(object):
             conf['run_every'] = endtime - starttime
 
         # Instantiate ElastAlert to use mock config and special rule
-        with mock.patch('elastalert.elastalert.get_rule_hashes'):
-            with mock.patch('elastalert.elastalert.load_rules') as load_conf:
-                load_conf.return_value = conf
+        with mock.patch('elastalert.config.load_config') as load_config:
+            with mock.patch('elastalert.config.load_config') as load_rules:
+                load_config.return_value = conf
+                load_rules.return_value = [rule]
                 if args.alert:
                     client = ElastAlerter(['--verbose'])
                 else:
@@ -231,10 +231,10 @@ class MockElastAlerter(object):
         # Mock writeback for both real data and json data
         client.writeback_es = None
         with mock.patch.object(client, 'writeback') as mock_writeback:
-            client.run_rule(rule, endtime, starttime)
+            client.run_rule(client.rules[client.rules.keys()[0]], endtime, starttime)
 
             if mock_writeback.call_count:
-                print("\nWould have written the following documents to elastalert_status:\n")
+                print("\nWould have written the following documents to metadata index:\n")
                 for call in mock_writeback.call_args_list:
                     print("%s - %s\n" % (call[0][0], call[0][1]))
 

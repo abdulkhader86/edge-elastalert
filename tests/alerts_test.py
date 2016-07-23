@@ -26,9 +26,9 @@ class mock_rule:
 
 
 def test_basic_match_string(ea):
-    ea.rules[0]['top_count_keys'] = ['username']
+    ea.rules['anytest']['top_count_keys'] = ['username']
     match = {'@timestamp': '1918-01-17', 'field': 'value', 'top_events_username': {'bob': 10, 'mallory': 5}}
-    alert_text = unicode(BasicMatchString(ea.rules[0], match))
+    alert_text = unicode(BasicMatchString(ea.rules['anytest'], match))
     assert 'anytest' in alert_text
     assert 'some stuff happened' in alert_text
     assert 'username' in alert_text
@@ -37,31 +37,31 @@ def test_basic_match_string(ea):
 
     # Non serializable objects don't cause errors
     match['non-serializable'] = {open: 10}
-    alert_text = unicode(BasicMatchString(ea.rules[0], match))
+    alert_text = unicode(BasicMatchString(ea.rules['anytest'], match))
 
     # unicode objects dont cause errors
     match['snowman'] = u'☃'
-    alert_text = unicode(BasicMatchString(ea.rules[0], match))
+    alert_text = unicode(BasicMatchString(ea.rules['anytest'], match))
 
     # Pretty printed objects
     match.pop('non-serializable')
     match['object'] = {'this': {'that': [1, 2, "3"]}}
-    alert_text = unicode(BasicMatchString(ea.rules[0], match))
+    alert_text = unicode(BasicMatchString(ea.rules['anytest'], match))
     assert '"this": {\n        "that": [\n            1,\n            2,\n            "3"\n        ]\n    }' in alert_text
 
-    ea.rules[0]['alert_text'] = 'custom text'
-    alert_text = unicode(BasicMatchString(ea.rules[0], match))
+    ea.rules['anytest']['alert_text'] = 'custom text'
+    alert_text = unicode(BasicMatchString(ea.rules['anytest'], match))
     assert 'custom text' in alert_text
 
-    ea.rules[0]['alert_text_type'] = 'alert_text_only'
-    alert_text = unicode(BasicMatchString(ea.rules[0], match))
+    ea.rules['anytest']['alert_text_type'] = 'alert_text_only'
+    alert_text = unicode(BasicMatchString(ea.rules['anytest'], match))
     assert 'custom text' in alert_text
     assert 'some stuff happened' not in alert_text
     assert 'username' not in alert_text
     assert 'field: value' not in alert_text
 
-    ea.rules[0]['alert_text_type'] = 'exclude_fields'
-    alert_text = unicode(BasicMatchString(ea.rules[0], match))
+    ea.rules['anytest']['alert_text_type'] = 'exclude_fields'
+    alert_text = unicode(BasicMatchString(ea.rules['anytest'], match))
     assert 'custom text' in alert_text
     assert 'some stuff happened' in alert_text
     assert 'username' in alert_text
@@ -70,7 +70,7 @@ def test_basic_match_string(ea):
 
 def test_jira_formatted_match_string(ea):
     match = {'foo': {'bar': ['one', 2, 'three']}, 'top_events_poof': 'phew'}
-    alert_text = str(JiraFormattedMatchString(ea.rules[0], match))
+    alert_text = str(JiraFormattedMatchString(ea.rules['anytest'], match))
     tab = 4 * ' '
     expected_alert_text_snippet = '{code:json}{\n' \
         + tab + '"foo": {\n' \
@@ -568,7 +568,7 @@ def test_kibana(ea):
             'include': ['@timestamp'],
             'timestamp_field': '@timestamp'}
     match = {'@timestamp': '2014-10-10T00:00:00'}
-    with mock.patch("elastalert.elastalert.Elasticsearch") as mock_es:
+    with mock.patch("elastalert.util.Elasticsearch") as mock_es:
         mock_create = mock.Mock(return_value={'_id': 'ABCDEFGH'})
         mock_es_inst = mock.Mock()
         mock_es_inst.create = mock_create
@@ -738,7 +738,7 @@ def test_slack_uses_custom_slack_channel():
 
 
 def test_alert_text_kw(ea):
-    rule = ea.rules[0].copy()
+    rule = ea.rules['anytest'].copy()
     rule['alert_text'] = '{field} at {time}'
     rule['alert_text_kw'] = {
         '@timestamp': 'time',

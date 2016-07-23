@@ -8,10 +8,11 @@ import pytest
 import elastalert.alerts
 import elastalert.ruletypes
 from elastalert.config import get_file_paths
-from elastalert.config import load_configuration
+from elastalert.config import load_rule
+from elastalert.config import init_rule
 from elastalert.config import load_modules
 from elastalert.config import load_options
-from elastalert.config import load_rules
+from elastalert.config import load_config
 from elastalert.util import EAException
 
 
@@ -54,7 +55,7 @@ def test_import_rules():
         # Test that type is imported
         with mock.patch('__builtin__.__import__') as mock_import:
             mock_import.return_value = elastalert.ruletypes
-            load_configuration('test_config', test_config)
+            init_rule(load_rule('test_config', test_config), test_config, test_args)
         assert mock_import.call_args_list[0][0][0] == 'testing.test'
         assert mock_import.call_args_list[0][0][3] == ['RuleType']
 
@@ -64,7 +65,7 @@ def test_import_rules():
         test_rule_copy['alert'] = 'testing2.test2.Alerter'
         with mock.patch('__builtin__.__import__') as mock_import:
             mock_import.return_value = elastalert.alerts
-            load_configuration('test_config', test_config)
+            init_rule(load_rule('test_config', test_config), test_config, test_args)
         assert mock_import.call_args_list[0][0][0] == 'testing2.test2'
         assert mock_import.call_args_list[0][0][3] == ['Alerter']
 
@@ -101,7 +102,7 @@ def test_load_rules():
 
         with mock.patch('os.listdir') as mock_ls:
             mock_ls.return_value = ['testrule.yaml']
-            rules = load_rules(test_args)
+            rules = load_config(test_args)
             assert isinstance(rules['rules'][0]['type'], elastalert.ruletypes.RuleType)
             assert isinstance(rules['rules'][0]['alert'][0], elastalert.alerts.Alerter)
             assert isinstance(rules['rules'][0]['timeframe'], datetime.timedelta)
@@ -124,7 +125,7 @@ def test_load_default_host_port():
 
         with mock.patch('os.listdir') as mock_ls:
             mock_ls.return_value = ['testrule.yaml']
-            rules = load_rules(test_args)
+            rules = load_config(test_args)
 
             # Assert include doesn't contain duplicates
             assert rules['es_port'] == 12345
@@ -159,7 +160,7 @@ def test_raises_on_missing_config():
             with mock.patch('os.listdir') as mock_ls:
                 mock_ls.return_value = ['testrule.yaml']
                 with pytest.raises(EAException):
-                    load_rules(test_args)
+                    load_config(test_args)
 
 
 def test_raises_on_bad_generate_kibana_filters():
@@ -182,11 +183,11 @@ def test_raises_on_bad_generate_kibana_filters():
         test_rule_copy['filter'] = good
         with mock.patch('elastalert.config.yaml_loader') as mock_open:
             mock_open.return_value = test_rule_copy
-            load_configuration('blah', test_config)
+            init_rule(load_rule('blah', test_config), test_config, test_args)
             for bad in bad_filters:
                 test_rule_copy['filter'] = good + bad
                 with pytest.raises(EAException):
-                    load_configuration('blah', test_config)
+                    init_rule(load_rule('blah', test_config), test_config, test_args)
 
 
 def test_get_file_paths_recursive():

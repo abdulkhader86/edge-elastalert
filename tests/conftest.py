@@ -58,6 +58,7 @@ def ea():
               'dt_to_ts': dt_to_ts,
               '_source_enabled': True}]
     conf = {'rules_folder': 'rules',
+            'rules_in_es': False,
             'run_every': datetime.timedelta(minutes=10),
             'buffer_time': datetime.timedelta(minutes=5),
             'alert_time_limit': datetime.timedelta(hours=24),
@@ -70,12 +71,11 @@ def ea():
             'disable_rules_on_error': False,
             'scroll_keepalive': '30s'}
     elasticsearch.client.Elasticsearch = mock_es_client
-    with mock.patch('elastalert.elastalert.get_rule_hashes'):
-        with mock.patch('elastalert.elastalert.load_rules') as load_conf:
-            load_conf.return_value = conf
-            ea = ElastAlerter(['--pin_rules'])
-    ea.rules[0]['type'] = mock_ruletype()
-    ea.rules[0]['alert'] = [mock_alert()]
+    with mock.patch('elastalert.config.load_config') as load_conf:
+        load_conf.return_value = conf
+        ea = ElastAlerter(['--pin_rules'])
+    ea.rules['anytest']['type'] = mock_ruletype()
+    ea.rules['anytest']['alert'] = [mock_alert()]
     ea.writeback_es = mock_es_client()
     ea.writeback_es.search.return_value = {'hits': {'hits': []}}
     ea.writeback_es.create.return_value = {'_id': 'ABCD'}
