@@ -751,7 +751,7 @@ def test_alert_text_kw(ea):
 
 
 def test_alert_text_global_substitution(ea):
-    rule = ea.rules[0].copy()
+    rule = ea.rules['anytest'].copy()
     rule['owner'] = 'the owner from rule'
     rule['priority'] = 'priority from rule'
     rule['abc'] = 'abc from rule'
@@ -773,7 +773,7 @@ def test_alert_text_global_substitution(ea):
 
 
 def test_alert_text_kw_global_substitution(ea):
-    rule = ea.rules[0].copy()
+    rule = ea.rules['anytest'].copy()
     rule['foo_rule'] = 'foo from rule'
     rule['owner'] = 'the owner from rule'
     rule['abc'] = 'abc from rule'

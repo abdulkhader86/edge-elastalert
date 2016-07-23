@@ -58,6 +58,7 @@ def ea():
               'dt_to_ts': dt_to_ts,
               '_source_enabled': True}]
     conf = {'rules_folder': 'rules',
+            'scan_subdirectories': True,
             'rules_in_es': False,
             'run_every': datetime.timedelta(minutes=10),
             'buffer_time': datetime.timedelta(minutes=5),

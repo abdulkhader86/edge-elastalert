@@ -106,50 +106,50 @@ def test_init_rule(ea):
 
 def test_query(ea):
     ea.current_es.search.return_value = {'hits': {'total': 0, 'hits': []}}
-    ea.run_query(ea.rules[0], START, END)
-    ea.current_es.search.assert_called_with(body={'query': {'filtered': {'filter': {'bool': {'must': [{'range': {'@timestamp': {'lte': END_TIMESTAMP, 'gt': START_TIMESTAMP}}}]}}}}, 'sort': [{'@timestamp': {'order': 'asc'}}]}, index='idx', _source_include=['@timestamp'], ignore_unavailable=True, size=ea.rules[0]['max_query_size'], scroll=ea.conf['scroll_keepalive'])
+    ea.run_query(ea.rules['anytest'], START, END)
+    ea.current_es.search.assert_called_with(body={'query': {'filtered': {'filter': {'bool': {'must': [{'range': {'@timestamp': {'lte': END_TIMESTAMP, 'gt': START_TIMESTAMP}}}]}}}}, 'sort': [{'@timestamp': {'order': 'asc'}}]}, index='idx', _source_include=['@timestamp'], ignore_unavailable=True, size=ea.rules['anytest']['max_query_size'], scroll=ea.conf['scroll_keepalive'])
 
 
 def test_query_with_fields(ea):
-    ea.rules[0]['_source_enabled'] = False
+    ea.rules['anytest']['_source_enabled'] = False
     ea.current_es.search.return_value = {'hits': {'total': 0, 'hits': []}}
-    ea.run_query(ea.rules[0], START, END)
-    ea.current_es.search.assert_called_with(body={'query': {'filtered': {'filter': {'bool': {'must': [{'range': {'@timestamp': {'lte': END_TIMESTAMP, 'gt': START_TIMESTAMP}}}]}}}}, 'sort': [{'@timestamp': {'order': 'asc'}}], 'fields': ['@timestamp']}, index='idx', ignore_unavailable=True, size=ea.rules[0]['max_query_size'], scroll=ea.conf['scroll_keepalive'])
+    ea.run_query(ea.rules['anytest'], START, END)
+    ea.current_es.search.assert_called_with(body={'query': {'filtered': {'filter': {'bool': {'must': [{'range': {'@timestamp': {'lte': END_TIMESTAMP, 'gt': START_TIMESTAMP}}}]}}}}, 'sort': [{'@timestamp': {'order': 'asc'}}], 'fields': ['@timestamp']}, index='idx', ignore_unavailable=True, size=ea.rules['anytest']['max_query_size'], scroll=ea.conf['scroll_keepalive'])
 
 
 def test_query_with_unix(ea):
-    ea.rules[0]['timestamp_type'] = 'unix'
-    ea.rules[0]['dt_to_ts'] = dt_to_unix
+    ea.rules['anytest']['timestamp_type'] = 'unix'
+    ea.rules['anytest']['dt_to_ts'] = dt_to_unix
     ea.current_es.search.return_value = {'hits': {'total': 0, 'hits': []}}
-    ea.run_query(ea.rules[0], START, END)
+    ea.run_query(ea.rules['anytest'], START, END)
     start_unix = dt_to_unix(START)
     end_unix = dt_to_unix(END)
-    ea.current_es.search.assert_called_with(body={'query': {'filtered': {'filter': {'bool': {'must': [{'range': {'@timestamp': {'lte': end_unix, 'gt': start_unix}}}]}}}}, 'sort': [{'@timestamp': {'order': 'asc'}}]}, index='idx', _source_include=['@timestamp'], ignore_unavailable=True, size=ea.rules[0]['max_query_size'], scroll=ea.conf['scroll_keepalive'])
+    ea.current_es.search.assert_called_with(body={'query': {'filtered': {'filter': {'bool': {'must': [{'range': {'@timestamp': {'lte': end_unix, 'gt': start_unix}}}]}}}}, 'sort': [{'@timestamp': {'order': 'asc'}}]}, index='idx', _source_include=['@timestamp'], ignore_unavailable=True, size=ea.rules['anytest']['max_query_size'], scroll=ea.conf['scroll_keepalive'])
 
 
 def test_query_with_unixms(ea):
-    ea.rules[0]['timestamp_type'] = 'unixms'
-    ea.rules[0]['dt_to_ts'] = dt_to_unixms
+    ea.rules['anytest']['timestamp_type'] = 'unixms'
+    ea.rules['anytest']['dt_to_ts'] = dt_to_unixms
     ea.current_es.search.return_value = {'hits': {'total': 0, 'hits': []}}
-    ea.run_query(ea.rules[0], START, END)
+    ea.run_query(ea.rules['anytest'], START, END)
     start_unix = dt_to_unixms(START)
     end_unix = dt_to_unixms(END)
-    ea.current_es.search.assert_called_with(body={'query': {'filtered': {'filter': {'bool': {'must': [{'range': {'@timestamp': {'lte': end_unix, 'gt': start_unix}}}]}}}}, 'sort': [{'@timestamp': {'order': 'asc'}}]}, index='idx', _source_include=['@timestamp'], ignore_unavailable=True, size=ea.rules[0]['max_query_size'], scroll=ea.conf['scroll_keepalive'])
+    ea.current_es.search.assert_called_with(body={'query': {'filtered': {'filter': {'bool': {'must': [{'range': {'@timestamp': {'lte': end_unix, 'gt': start_unix}}}]}}}}, 'sort': [{'@timestamp': {'order': 'asc'}}]}, index='idx', _source_include=['@timestamp'], ignore_unavailable=True, size=ea.rules['anytest']['max_query_size'], scroll=ea.conf['scroll_keepalive'])
 
 
 def test_no_hits(ea):
     ea.current_es.search.return_value = {'hits': {'total': 0, 'hits': []}}
-    ea.run_query(ea.rules[0], START, END)
-    assert ea.rules[0]['type'].add_data.call_count == 0
+    ea.run_query(ea.rules['anytest'], START, END)
+    assert ea.rules['anytest']['type'].add_data.call_count == 0
 
 
 def test_no_terms_hits(ea):
-    ea.rules[0]['use_terms_query'] = True
-    ea.rules[0]['query_key'] = 'QWERTY'
-    ea.rules[0]['doc_type'] = 'uiop'
+    ea.rules['anytest']['use_terms_query'] = True
+    ea.rules['anytest']['query_key'] = 'QWERTY'
+    ea.rules['anytest']['doc_type'] = 'uiop'
     ea.current_es.search.return_value = {'hits': {'total': 0, 'hits': []}}
-    ea.run_query(ea.rules[0], START, END)
-    assert ea.rules[0]['type'].add_terms_data.call_count == 0
+    ea.run_query(ea.rules['anytest'], START, END)
+    assert ea.rules['anytest']['type'].add_terms_data.call_count == 0
 
 def test_some_hits(ea):
     hits = generate_hits([START_TIMESTAMP, END_TIMESTAMP])
@@ -256,39 +256,39 @@ def test_match_with_module(ea):
 
 
 def test_match_with_module_with_agg(ea):
-    mod = BaseEnhancement(ea.rules[0])
+    mod = BaseEnhancement(ea.rules['anytest'])
     mod.process = mock.Mock()
-    ea.rules[0]['match_enhancements'] = [mod]
-    ea.rules[0]['aggregation'] = datetime.timedelta(minutes=15)
+    ea.rules['anytest']['match_enhancements'] = [mod]
+    ea.rules['anytest']['aggregation'] = datetime.timedelta(minutes=15)
     hits = generate_hits([START_TIMESTAMP, END_TIMESTAMP])
     ea.current_es.search.return_value = hits
-    ea.rules[0]['type'].matches = [{'@timestamp': END}]
-    with mock.patch('elastalert.elastalert.Elasticsearch'):
-        ea.run_rule(ea.rules[0], END, START)
+    ea.rules['anytest']['type'].matches = [{'@timestamp': END}]
+    with mock.patch('elastalert.util.Elasticsearch'):
+        ea.run_rule(ea.rules['anytest'], END, START)
     assert mod.process.call_count == 0
 
 
 def test_match_with_enhancements_first(ea):
-    mod = BaseEnhancement(ea.rules[0])
+    mod = BaseEnhancement(ea.rules['anytest'])
     mod.process = mock.Mock()
-    ea.rules[0]['match_enhancements'] = [mod]
-    ea.rules[0]['aggregation'] = datetime.timedelta(minutes=15)
-    ea.rules[0]['run_enhancements_first'] = True
+    ea.rules['anytest']['match_enhancements'] = [mod]
+    ea.rules['anytest']['aggregation'] = datetime.timedelta(minutes=15)
+    ea.rules['anytest']['run_enhancements_first'] = True
     hits = generate_hits([START_TIMESTAMP, END_TIMESTAMP])
     ea.current_es.search.return_value = hits
-    ea.rules[0]['type'].matches = [{'@timestamp': END}]
-    with mock.patch('elastalert.elastalert.Elasticsearch'):
+    ea.rules['anytest']['type'].matches = [{'@timestamp': END}]
+    with mock.patch('elastalert.util.Elasticsearch'):
         with mock.patch.object(ea, 'add_aggregated_alert') as add_alert:
-            ea.run_rule(ea.rules[0], END, START)
+            ea.run_rule(ea.rules['anytest'], END, START)
     mod.process.assert_called_with({'@timestamp': END})
     assert add_alert.call_count == 1
 
     # Assert that dropmatchexception behaves properly
     mod.process = mock.MagicMock(side_effect=DropMatchException)
-    ea.rules[0]['type'].matches = [{'@timestamp': END}]
-    with mock.patch('elastalert.elastalert.Elasticsearch'):
+    ea.rules['anytest']['type'].matches = [{'@timestamp': END}]
+    with mock.patch('elastalert.util.Elasticsearch'):
         with mock.patch.object(ea, 'add_aggregated_alert') as add_alert:
-            ea.run_rule(ea.rules[0], END, START)
+            ea.run_rule(ea.rules['anytest'], END, START)
     mod.process.assert_called_with({'@timestamp': END})
     assert add_alert.call_count == 0
 
@@ -396,9 +396,9 @@ def test_agg_no_writeback_connectivity(ea):
                                            {'@timestamp': hit3}]
     ea.writeback_es.create.side_effect = elasticsearch.exceptions.ElasticsearchException('Nope')
 
-    with mock.patch('elastalert.elastalert.Elasticsearch'):
+    with mock.patch('elastalert.util.Elasticsearch'):
         with mock.patch.object(ea, 'find_pending_aggregate_alert', return_value=None):
-            ea.run_rule(ea.rules[0], END, START)
+            ea.run_rule(ea.rules['anytest'], END, START)
 
     assert ea.rules['anytest']['agg_matches'] == [{'@timestamp': hit1},
                                                   {'@timestamp': hit2},

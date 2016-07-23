@@ -19,6 +19,7 @@ import kibana
 from alerts import DebugAlerter
 import config
 from croniter import croniter
+
 from elasticsearch.exceptions import ElasticsearchException
 from enhancements import DropMatchException
 from util import add_raw_postfix
