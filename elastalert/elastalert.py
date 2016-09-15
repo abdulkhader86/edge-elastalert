@@ -912,15 +912,15 @@ class ElastAlerter():
                 alert_sent = True
 
         # Write the alert(s) to ES
-        agg_id = None
-        for match in matches:
-            alert_body = self.get_alert_body(match, rule, alert_sent, alert_time, alert_exception)
+        # agg_id = None
+        # for match in matches:
+        #     alert_body = self.get_alert_body(match, rule, alert_sent, alert_time, alert_exception)
             # Set all matches to aggregate together
-            if agg_id:
-                alert_body['aggregate_id'] = agg_id
-            res = self.writeback('elastalert', alert_body)
-            if res and not agg_id:
-                agg_id = res['_id']
+        #     if agg_id:
+        #         alert_body['aggregate_id'] = agg_id
+        #     res = self.writeback('elastalert', alert_body)
+        #     if res and not agg_id:
+        #         agg_id = res['_id']
 
     def get_alert_body(self, match, rule, alert_sent, alert_time, alert_exception=None):
         body = {'match_body': match}
