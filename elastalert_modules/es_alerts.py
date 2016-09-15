@@ -35,4 +35,4 @@ class ESAlerter(Alerter):
             print result
 
     def get_info(self):
-        return {'type': 'Inbox Alerter'}
+        return {'type': 'ES Alerter'}
