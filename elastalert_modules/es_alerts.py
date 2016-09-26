@@ -9,7 +9,7 @@ def str2(match_obj):
     for key, value in match_items:
         if key.startswith('_id'):
             value_str = unicode(value)
-            text += '%s: %s\n' % (key, value_str)
+            text += '%s\n' % (value_str)
     return text
 
 
@@ -23,8 +23,8 @@ class ESAlerter(Alerter):
     # Alert is called
     def alert(self, matches):
         es = new_elasticsearch(build_es_conn_config({
-            "es_host": "0.0.0.0",
-            "es_port": 9200}))
+            "es_host": self.rule.get('es_host'),
+            "es_port": self.rule.get('es_port')}))
         for match in matches:
             match_obj = BasicMatchString(self.rule, match)
             result = es.index(self.es_index,

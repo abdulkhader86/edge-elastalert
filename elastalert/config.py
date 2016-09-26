@@ -97,7 +97,7 @@ def init_rule(rule, conf, args=None):
     """
     add_rule_hash(rule)
     load_options(rule, conf, args)
-    load_modules(rule, args)
+    load_modules(rule, conf, args)
     return rule
 
 
@@ -273,7 +273,7 @@ def load_options(rule, conf, args=None):
                                                                          datetime.datetime.now().strftime(rule.get('index'))))
 
 
-def load_modules(rule, args=None):
+def load_modules(rule, conf, args=None):
     """ Loads things that could be modules. Enhancements, alerts and rule type. """
     # Set match enhancements
     match_enhancements = []
@@ -306,7 +306,7 @@ def load_modules(rule, args=None):
     except (KeyError, EAException) as e:
         raise EAException('Error initializing rule %s: %s' % (rule['name'], e))
     # Instantiate alert
-    rule['alert'] = load_alerts(rule, alert_field=rule['alert'])
+    rule['alert'] = load_alerts(rule, conf, alert_field=rule['alert'])
 
 
 def get_file_paths(conf, use_rule=None):
@@ -330,16 +330,17 @@ def get_file_paths(conf, use_rule=None):
     return rule_files
 
 
-def load_alerts(rule, alert_field):
+def load_alerts(rule, conf, alert_field):
     def normalize_config(alert):
         """Alert config entries are either "alertType" or {"alertType": {"key": "data"}}.
         This function normalizes them both to the latter format. """
         if isinstance(alert, basestring):
             return alert, rule
         elif isinstance(alert, dict):
-            name, config = iter(alert.items()).next()
-            config_copy = copy.copy(rule)
-            config_copy.update(config)  # warning, this (intentionally) mutates the rule dict
+            name, alert_config = iter(alert.items()).next()
+            rule_config_copy = copy.copy(rule)
+            global_config_copy = copy.copy(conf)
+            rule_config_copy.update(alert_config).update(global_config_copy)  # warning, this (intentionally) mutates the rule dict
             return name, config_copy
         else:
             raise EAException()
