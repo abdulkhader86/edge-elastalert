@@ -703,7 +703,10 @@ class ElastAlerter():
         self.starttime = None
 
         if not self.args.pin_rules:
-            self.load_rule_changes()
+            try:
+                self.load_rule_changes()
+            except EAException as e:
+                self.handle_error("Error loading rules %s" % (e), {'rule': ''})
 
     def stop(self):
         """ Stop an elastalert runner that's been started """
