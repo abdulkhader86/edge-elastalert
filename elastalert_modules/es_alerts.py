@@ -23,8 +23,12 @@ class ESAlerter(Alerter):
     # Alert is called
     def alert(self, matches):
         es = new_elasticsearch(build_es_conn_config({
+            "use_ssl": self.rule.get('use_ssl'),
             "es_host": self.rule.get('es_host'),
-            "es_port": self.rule.get('es_port')}))
+            "es_port": self.rule.get('es_port'),
+            "es_username": self.rule.get('es_username'),
+            "es_password": self.rule.get('es_password')
+        }))
         for match in matches:
             match_obj = BasicMatchString(self.rule, match)
             result = es.index(self.es_index,
