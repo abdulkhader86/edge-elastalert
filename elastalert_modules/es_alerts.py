@@ -2,6 +2,7 @@ import datetime
 from elastalert.util import new_elasticsearch, build_es_conn_config
 from elastalert.alerts import Alerter, BasicMatchString
 
+
 def str2(match_obj):
     match_items = match_obj.match.items()
     match_items.sort(key=lambda x: x[0])
@@ -16,6 +17,7 @@ def str2(match_obj):
 # noinspection PyPackageRequirements
 class ESAlerter(Alerter):
     required_options = frozenset(['es_index'])
+
     def __init__(self, *args):
         super(ESAlerter, self).__init__(*args)
         self.es_index = self.rule.get('es_index', '')
@@ -33,7 +35,8 @@ class ESAlerter(Alerter):
             match_obj = BasicMatchString(self.rule, match)
             result = es.index(self.es_index,
                               'alerts',
-                              {"rule_name": match_obj.rule['name'],
+                              {"user": match_obj.rule['user'],
+                               "rule_name": match_obj.rule['name'],
                                'timestamp': datetime.datetime.utcnow(),
                                "info": str2(match_obj)})
             print result
