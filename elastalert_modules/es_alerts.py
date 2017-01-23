@@ -9,7 +9,7 @@ def str2(match_obj):
     text = ""
     for key, value in match_items:
         if key.startswith('_id'):
-            value_str = unicode(value)
+            value_str = unicode(value.strip())
             text += '%s\n' % (value_str)
     return text
 
@@ -24,22 +24,17 @@ class ESAlerter(Alerter):
 
     # Alert is called
     def alert(self, matches):
-        es = new_elasticsearch(build_es_conn_config({
-            "use_ssl": self.rule.get('use_ssl'),
-            "es_host": self.rule.get('es_host'),
-            "es_port": self.rule.get('es_port'),
-            "es_username": self.rule.get('es_username'),
-            "es_password": self.rule.get('es_password')
-        }))
+        rule_es_conn_config = build_es_conn_config(self.rule)
+        es = new_elasticsearch(rule_es_conn_config)
+
         for match in matches:
             match_obj = BasicMatchString(self.rule, match)
-            result = es.index(self.es_index,
+            es.index(self.es_index,
                               'alerts',
                               {"user": match_obj.rule['user'],
                                "rule_name": match_obj.rule['name'],
                                'timestamp': datetime.datetime.utcnow(),
                                "info": str2(match_obj)})
-            print result
 
     def get_info(self):
         return {'type': 'ES Alerter'}
