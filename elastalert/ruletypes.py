@@ -103,10 +103,31 @@ class BlacklistRule(CompareRule):
     """ A CompareRule where the compare function checks a given key against a blacklist """
     required_options = frozenset(['compare_key', 'blacklist'])
 
+    def collect_all_values(self, obj, acc=None):
+        if acc is None:
+            acc = []
+
+        try:
+            for child in obj.itervalues(): # Dict
+                self.collect_all_values(child, acc)
+        except AttributeError:
+            try:
+                if isinstance(obj, basestring):
+                    acc.append(obj)
+                else:
+                    for child in obj:
+                        self.collect_all_values(child, acc)
+            except TypeError:
+                acc.append(obj)
+        return acc
+
     def compare(self, event):
-        term = lookup_es_key(event, self.rules['compare_key'])
-        if term in self.rules['blacklist']:
-            return True
+        if self.rules['compare_key'] == '_all':
+            return any(True for value in self.collect_all_values(event) if value in self.rules['blacklist'])
+        else:
+            term = lookup_es_key(event, self.rules['compare_key'])
+            if term in self.rules['blacklist']:
+                return True
         return False
 
 
