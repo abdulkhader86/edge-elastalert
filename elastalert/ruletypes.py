@@ -118,16 +118,28 @@ class BlacklistRule(CompareRule):
                     for child in obj:
                         self.collect_all_values(child, acc)
             except TypeError:
-                acc.append(obj)
+                acc.append(str(obj))
         return acc
 
     def compare(self, event):
         if self.rules['compare_key'] == '_all':
-            return any(True for value in self.collect_all_values(event) if value in self.rules['blacklist'])
+            if self.rules.get('exact_match', True):
+                return any(True for value in self.collect_all_values(event) if value in self.rules['blacklist'])
+            else:
+                for term in self.collect_all_values(event):
+                    for blacklisted in self.rules['blacklist']:
+                        if term.lower().find(blacklisted.lower()) >= 0:
+                            return True
+
         else:
             term = lookup_es_key(event, self.rules['compare_key'])
-            if term in self.rules['blacklist']:
-                return True
+            if self.rules.get('exact_match', True):
+                if term in self.rules['blacklist']:
+                    return True
+            else:
+                for blacklisted in self.rules['blacklist']:
+                    if term.lower().find(blacklisted.lower()) >= 0:
+                        return True
         return False
 
 
