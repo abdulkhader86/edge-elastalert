@@ -33,7 +33,7 @@ class ESAlerter(Alerter):
                               'alerts',
                               {"user": match_obj.rule['user'],
                                "rule_name": match_obj.rule['name'],
-                               'timestamp': datetime.datetime.utcnow(),
+                               '@timestamp': datetime.datetime.utcnow(),
                                "info": str2(match_obj)})
 
     def get_info(self):
